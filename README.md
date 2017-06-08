@@ -1,6 +1,8 @@
-# A Makefile for Arduino Sketches [![Build Status](https://travis-ci.org/sudar/Arduino-Makefile.svg)](https://travis-ci.org/sudar/Arduino-Makefile)
+# A Makefile for Arduino Sketches 
 
-This is a very simple Makefile which knows how to build Arduino sketches. It defines entire workflows for compiling code, flashing it to Arduino and even communicating through Serial monitor. You don't need to change anything in the Arduino sketches.
+This is a very simple Makefile which knows how to build Arduino sketches for ESP8266-boards. It defines entire workflows for compiling code, flashing it to ESP8266 and even communicating through Serial monitor. You don't need to change anything in the Arduino sketches.
+
+The Makefile is based on [Arduino-Makefile](https://github.com/sudar/Arduino-Makefile). It uses most the filestructure of Arduino-Makefile but all AVR-related is replaced with ESP-tool (esptool, xtensa-lx106-elf-* etc)
 
 ## Features
 
