@@ -39,7 +39,8 @@ Create a Makefile (see [Makefile.example](Makefile.example) and [BasicOTA exampl
 
 After which:
 
-```make
+```sh
+   make
    make upload
 ```
 
