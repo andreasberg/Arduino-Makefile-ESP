@@ -13,7 +13,7 @@ The ESP-parts are mostly derived from [makeEspArduino](https://github.com/plerup
 
 ### From source
 
-- Clone it from Github using the command `https://github.com/andreasberg/Arduino-Makefile-ESP.git`
+- Clone it from Github using the command `git clone https://github.com/andreasberg/Arduino-Makefile-ESP.git`
 - Check the [usage section](https://github.com/andreasberg/Arduino-Makefile#usage) in this readme about setting usage options
 
 ## Requirements
