@@ -7,12 +7,12 @@ ARDMK_DIR := $(SRCDIR)/../Arduino-Makefile-ESP
 include $(ARDMK_DIR)/Common.mk
 
 #set the board tag, run 'make show_boards' to show available boards
-BOARD_TAG=huzzah
+BOARD_TAG=generic
 
 #extra library path if needed
 #USER_LIB_PATH := $(SRCDIR)/libraries
 
 # List all libraries(filenames) needed (searched for in all known library paths) 
-ARDUINO_LIBS=ArduinoOTA arduinoWebSockets CAN_BUS_Shield DNSServer ESP8266mDNS ESP8266WebServer ESP8266WiFi Hash NMEA2000 NMEA2000_mcp SPI WiFiManager
+ARDUINO_LIBS=ArduinoOTA ESP8266mDNS ESP8266WiFi
 
 include $(ARDMK_DIR)/ArduinoESP.mk
