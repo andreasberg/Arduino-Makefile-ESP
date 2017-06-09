@@ -1,4 +1,4 @@
-# A Makefile for Arduino Sketches 
+# A Makefile for Arduino Sketches for ESP-boards
 
 This is a very simple Makefile which knows how to build Arduino sketches for ESP8266-boards. It defines entire workflows for compiling code, flashing it to ESP8266 and even communicating through Serial monitor. You don't need to change anything in the Arduino sketches.
 
