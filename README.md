@@ -73,7 +73,7 @@ Autodetection of libraries is not currently supported
 
 ## esptool & espota.py
 
-To upload compiled files, `esptool` or `espota.py` is used. This Makefile tries to find these tools below `ARDUINO_DIR`/hardware/esp8266com/esp8266/tools. 
+To upload compiled files, `esptool` or `espota.py` is used. This Makefile tries to find these tools below `ARDUINO_DIR/hardware/esp8266com/esp8266/tools`. 
 
 ## Limitations / Know Issues / TODO's
 
