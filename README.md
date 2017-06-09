@@ -35,7 +35,7 @@ The installation method is described under [Using git version](https://github.co
 
 Download a copy of this repo somewhere to your system.
 
-Create a Makefile (see [Makefile.example](Makefile.example)) in the same directory as the sketch and set ARDMK_DIR to point to the location where you downloaded this repo.
+Create a Makefile (see [Makefile.example](Makefile.example) and [BasicOTA example](examples/BasicOTA)) in the same directory as the sketch and set ARDMK_DIR to point to the location where you downloaded this repo.
 
 After which:
 
