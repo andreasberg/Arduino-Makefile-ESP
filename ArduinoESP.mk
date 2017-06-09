@@ -212,7 +212,7 @@ endif
 ifndef TARGET
     space :=
     space +=
-    TARGET = $(notdir $(subst $(space),_,$(CURDIR)))
+    TARGET = $(notdir $(subst $(space),_,$(SRCDIR)))
 endif
 
 ########################################################################
@@ -518,6 +518,16 @@ ifndef USER_LIB_PATH
 else
     $(call show_config_variable,USER_LIB_PATH,[USER])
 endif
+
+#OTHER_LIBS = -lhal -lphy -lpp -lnet80211 -llwip_gcc -lwpa -lcrypto -lmain -lwps -laxtls -lespnow -lsmartconfig -lmesh -lwpa2 -lstdc++ -lgcc
+PLATFORM_ELF_LIBS := $(call PARSE_PLATFORM,compiler.c.elf.libs)
+ifneq (,$(strip $(PLATFORM_ELF_LIBS)))
+	# expand {build.lwip_lib} to -llwip_gcc
+	PLATFORM_ELF_LIBS := $(patsubst {build.lwip_lib},-llwip_gcc,$(PLATFORM_ELF_LIBS))
+	# remove any other unexpanded variable {*}
+	OTHER_LIBS += $(patsubst {%},,$(PLATFORM_ELF_LIBS))
+endif
+$(call show_config_variable,OTHER_LIBS,[COMPUTED])
 
 ifndef PRE_BUILD_HOOK
     PRE_BUILD_HOOK = pre-build-hook.sh
@@ -966,38 +976,57 @@ endif
 # Bootloader tool ESPTOOL
 
 ifndef ESP_FLASH_MODE
-	ESP_FLASH_MODE := $(call PARSE_BOARD,$(BOARD_TAG),build.flash_mode)
-	ifeq (,$strip($(ESP_FLASH_MODE)))
-		ESP_FLASH_MODE = qio
+	# first look for $(BOARD_TAG).build.flash_mode
+    ESP_FLASH_MODE := $(strip $(call PARSE_BOARD,$(BOARD_TAG),build.flash_mode))
+    ifeq (,$(ESP_FLASH_MODE))
+    	# then look for $(BOARD_TAG).menu.FlashMode.*.build.flash_mode
+    	ESP_FLASH_MODE := $(strip $(firstword $(call PARSE_BOARD,$(BOARD_TAG),menu.FlashMode.*.build.flash_mode)))
+    	ifeq (,$(ESP_FLASH_MODE))
+        	ESP_FLASH_MODE = qio
+        endif
 	endif
 endif
 
 ifndef ESP_FLASH_FREQ
-	ESP_FLASH_FREQ := $(call PARSE_BOARD,$(BOARD_TAG),build.flash_freq)
-    #$(info $(ESP_FLASH_FREQ))
-	ifeq (,$strip($(ESP_FLASH_FREQ)))
-		ESP_FLASH_FREQ = 40
+	# first look for $(BOARD_TAG).build.flash_freq
+    ESP_FLASH_FREQ := $(strip $(call PARSE_BOARD,$(BOARD_TAG),build.flash_freq))
+    ifeq (,$(ESP_FLASH_FREQ))
+    	# then look for $(BOARD_TAG).menu.FlashFreq.*.build.flash_freq
+    	ESP_FLASH_FREQ := $(strip $(firstword $(call PARSE_BOARD,$(BOARD_TAG),menu.FlashFreq.*.build.flash_freq)))
+    	ifeq (,$(ESP_FLASH_FREQ))
+        	ESP_FLASH_FREQ = 40
+        endif
 	endif
 endif
 
 ifndef ESP_UPLOAD_SPEED
-	ESP_UPLOAD_SPEED := $(call PARSE_BOARD,$(BOARD_TAG),upload.speed)
-	ifeq (,$strip($(ESP_UPLOAD_SPEED)))
-		ESP_UPLOAD_SPEED = 115200
-	endif
+    # first look for $(BOARD_TAG).upload.speed
+    ESP_UPLOAD_SPEED := $(strip $(call PARSE_BOARD,$(BOARD_TAG),upload.speed))
+    ifeq (,$(ESP_UPLOAD_SPEED))
+        # then look for $(BOARD_TAG).menu.UploadSpeed.*.upload.speed
+        ESP_UPLOAD_SPEED := $(strip $(firstword $(call PARSE_BOARD,$(BOARD_TAG),menu.UploadSpeed.*.upload.speed)))
+        ifeq (,$(ESP_UPLOAD_SPEED))
+            ESP_UPLOAD_SPEED = 115200
+        endif
+    endif
 endif
 
 ifndef ESP_UPLOAD_RESETMETHOD
-	ESP_UPLOAD_RESETMETHOD := $(call PARSE_BOARD,$(BOARD_TAG),upload.resetmethod)
-	ifeq (,$strip($(ESP_UPLOAD_RESETMETHOD)))
-		ESP_UPLOAD_RESETMETHOD = 115200
+	# first look for $(BOARD_TAG).build.flash_freq
+    ESP_UPLOAD_RESETMETHOD := $(strip $(call PARSE_BOARD,$(BOARD_TAG),upload.resetmethod))
+    ifeq (,$(ESP_UPLOAD_RESETMETHOD))
+    	# then look for $(BOARD_TAG).menu.ResetMethod.*.upload.resetmethod
+    	ESP_UPLOAD_RESETMETHOD := $(strip $(firstword $(call PARSE_BOARD,$(BOARD_TAG),menu.ResetMethod.*.upload.resetmethod)))
+    	ifeq (,$(ESP_UPLOAD_RESETMETHOD))
+        	ESP_UPLOAD_RESETMETHOD = nodemcu
+        endif
 	endif
 endif
 
 ESP_OTA_ADDR ?= 192.168.1.1
 ESP_OTA_PORT ?= 8266
 ESP_OTA_PWD ?= ""
-FS_DIR ?= $(CURDIR)/data
+FS_DIR ?= $(SRCDIR)/data
 
 ifndef ESPTOOL
     ESPTOOL          := $(TOOLS_DIR)/esptool/esptool
@@ -1198,6 +1227,10 @@ $(OBJDIR)/%.sym: $(OBJDIR)/%.elf $(COMMON_DEPS)
 	@$(MKDIR) $(dir $@)
 	$(NM) --size-sort --demangle --reverse-sort --line-numbers $< > $@
 
+$(OBJDIR)/%.spiffs: 
+	@$(MKDIR) $(dir $@)
+	$(FSTOOL) $(FSTOOL_OPTS) -c $(FS_DIR) $@
+
 ########################################################################
 # Explicit targets start here
 
@@ -1216,12 +1249,10 @@ pre-build:
 		$(call runscript_if_exists,$(PRE_BUILD_HOOK))
 
 $(TARGET_ELF): 	$(LOCAL_OBJS) $(CORE_LIB) $(OTHER_OBJS)
-		$(CC) $(LDFLAGS) -o $@ -Wl,--start-group $(LOCAL_OBJS) $(CORE_LIB) $(OTHER_OBJS) $(OTHER_LIBS) -lc -lm -Wl,--end-group 
+		$(CC) $(LDFLAGS) -o $@ -Wl,--start-group $(LOCAL_OBJS) $(CORE_LIB) $(OTHER_OBJS) $(OTHER_LIBS) -lc -lm -Wl,--end-group
+
 $(CORE_LIB):	$(CORE_OBJS) $(LIB_OBJS) $(PLATFORM_LIB_OBJS) $(USER_LIB_OBJS)
 		$(AR) cru $@ $(CORE_OBJS) $(LIB_OBJS) $(PLATFORM_LIB_OBJS) $(USER_LIB_OBJS)
-
-$(TARGET_FS): 
-		$(FSTOOL) $(FSTOOL_OPTS) -c $(FS_DIR) $(TARGET_FS) 
 
 fs:		$(TARGET_FS)
 
@@ -1240,7 +1271,7 @@ upload_fs_ota:		$(TARGET_FS)
 clean::
 		$(REMOVE) $(OBJDIR)
 
-size:	$(TARGET_HEX)
+size:	
 		$(call esp_size,$(TARGET_ELF))
 
 show_boards:
@@ -1347,6 +1378,6 @@ print "\nMemory usage\n";
 print sprintf("  %-6s %6d bytes\n", "Ram:", $$r);
 print sprintf("    %-12s %6d bytes\n" x 3 , ".data:", $$data, ".rodata:", $$rodata, ".bss:", $$bss);
 print sprintf("  %-6s %6d bytes\n", "Flash:", $$f);
-print sprintf("    %-12s %6d bytes\n" x 4 ."\n", ".data:", $$data, ".rodata:", $$rodata, ".text:", $$text, ".irom0.text:", $$irom0text);
+print sprintf("    %-12s %6d bytes %s\n" x 4 ."\n", ".data:", $$data, "", ".rodata:", $$rodata, "", ".text:", $$text, sprintf("(%d\%)",($$text/32768)*100), ".irom0.text:", $$irom0text, "");
 endef
 export MEM_USAGE

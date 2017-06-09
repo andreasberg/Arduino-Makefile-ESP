@@ -1,0 +1,18 @@
+## Example of a Makefile. Save this as 'Makefile' in the same direcotry as the .ino-sketch
+
+SRCDIR := $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+ARDMK_DIR := $(SRCDIR)/../Arduino-Makefile-ESP
+
+# include Common.mk now we know where it is
+include $(ARDMK_DIR)/Common.mk
+
+#set the board tag, run 'make show_boards' to show available boards
+BOARD_TAG=huzzah
+
+#extra library path if needed
+#USER_LIB_PATH := $(SRCDIR)/libraries
+
+# List all libraries(filenames) needed (searched for in all known library paths) 
+ARDUINO_LIBS=ArduinoOTA arduinoWebSockets CAN_BUS_Shield DNSServer ESP8266mDNS ESP8266WebServer ESP8266WiFi Hash NMEA2000 NMEA2000_mcp SPI WiFiManager
+
+include $(ARDMK_DIR)/ArduinoESP.mk
