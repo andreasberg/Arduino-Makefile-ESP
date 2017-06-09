@@ -51,7 +51,7 @@ Useful Variables:
 - `ARDUINO_DIR` - Path to Arduino installation. 
 - `TOOLS_DIR` - Path where the esp tools chain binaries are present. 
 
-The list of all variables that can be overridden is available at [arduino-mk-esp-vars.md](arduino-mk-esp-vars.md) file.
+A list of most variables that can be overridden is available at [arduino-mk-esp-vars.md](arduino-mk-esp-vars.md) file.
 
 ## Including Libraries
 
